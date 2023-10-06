@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import study.querydsl.entity.Member;
 import study.querydsl.entity.Team;
 
 import javax.persistence.EntityManager;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static study.querydsl.entity.QMember.member;
@@ -81,9 +84,25 @@ public class QueryBasicTest {
     public void searchAndParam() {
         Member findMember = queryFactory
                 .selectFrom(member)
-                .where(member.username.eq("member1").and(member.age.eq(10)))
+                //.where(member.username.eq("member1").and(member.age.eq(10)))
+                .where(member.username.eq("member1"),  // 이렇게 사용하면 null값일 경우 무시
+                        member.age.eq(10))
                 .fetchOne();
         assertThat(findMember.getUsername()).isEqualTo("member1");
         assertThat(findMember.getAge()).isEqualTo(10);
+    }
+
+    @Test
+    public void resultFetch() {
+        List<Member> fetch = queryFactory
+                .selectFrom(member).fetch();
+
+        Member fetchOne = queryFactory.selectFrom(member).where(member.username.eq("member1")).fetchOne();
+
+        Member fetchFirst = queryFactory.selectFrom(member).fetchFirst();
+
+        QueryResults<Member> results = queryFactory.selectFrom(member).fetchResults();
+        List<Member> content = results.getResults();
+        long totalCount = results.getTotal();
     }
 }
